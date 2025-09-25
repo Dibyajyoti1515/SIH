@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id               String      @id @default(uuid())
+  name             String
+  maxHours         Int
+  u_entry          Int
+  u_leave          Int
+  sessions         Session[]
+  timetableEntries Timetable[]
+  b_id             Batch[]     @relation("BatchToTeacher")
+  r_subject        Subject[]   @relation("TeacherSubjects")
+}
+
+model Classroom {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  capacity  Int
+  equipment String[]
+  batches   Batch[]
+}
+
+model Batch {
+  id               String      @id @default(uuid())
+  name             String
+  priority         Int
+  c_start          Int
+  c_end            Int
+  c_start_day      Day
+  c_end_day        Day
+  strength         Int
+  numLabs          Int
+  classroomId      String
+  classroom        Classroom   @relation(fields: [classroomId], references: [id])
+  sessions         Session[]
+  timetableEntries Timetable[]
+  b_subject        Subject[]   @relation("BatchSubjects")
+  t_subject        Teacher[]   @relation("BatchToTeacher")
+}
+
+model Subject {
+  id               String      @id @default(uuid())
+  name             String
+  isLab            Boolean     @default(false)
+  time_taken       Int
+  sessions         Session[]
+  timetableEntries Timetable[]
+  batches          Batch[]     @relation("BatchSubjects")
+  teachers         Teacher[]   @relation("TeacherSubjects")
+}
+
+model Session {
+  id               String   @id @default(uuid())
+  batchId          String
+  subjectId        String
+  teacherId        String?
+  duration         Int
+  type             String
+  spreadAcrossDays Boolean? @default(false)
+  batch            Batch    @relation(fields: [batchId], references: [id])
+  subject          Subject  @relation(fields: [subjectId], references: [id])
+  teacher          Teacher? @relation(fields: [teacherId], references: [id])
+}
+
+model Timetable {
+  id        String  @id @default(uuid())
+  batchId   String
+  subjectId String
+  teacherId String
+  day       Day
+  slot      Int
+  batch     Batch   @relation(fields: [batchId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+}
+
+enum Day {
+  Mon
+  Tue
+  Wed
+  Thu
+  Fri
+  Sat
+}

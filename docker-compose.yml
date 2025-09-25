@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: ./Smart-Classroom-and-Time-table-scheduler
+    container_name: sih-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - sih-network
+
+  backend:
+    build: ./testBackend
+    container_name: sih-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/sihdb
+    depends_on:
+      - db
+    networks:
+      - sih-network
+
+  db:
+    image: postgres:15
+    container_name: sih-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sihdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - sih-network
+
+networks:
+  sih-network:
+
+volumes:
+  pgdata:
